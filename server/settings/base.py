@@ -1,5 +1,6 @@
 from pathlib import Path
 from decouple import config
+from jwt import *
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,13 +30,15 @@ DJANGO_APPS = [
 ]
 
 INSTALLED_LIBRARIES = [
-    'rest_framework',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.vk',
     'allauth.socialaccount.providers.facebook',
     'allauth.socialaccount.providers.google',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework.authtoken',
 ]
 
 PROJECT_APPS = [
@@ -47,6 +50,8 @@ INSTALLED_APPS = [
     *INSTALLED_LIBRARIES,
     *PROJECT_APPS
 ]
+
+AUTH_USER_MODEL = 'user.User'
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
@@ -140,6 +145,14 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": ['rest_framework.permissions.AllowAny'],
+    }
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
