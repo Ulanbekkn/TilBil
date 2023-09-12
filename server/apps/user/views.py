@@ -4,31 +4,30 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 
 from server.apps.user import serializers
-from server.apps.user.models import User
+from server.apps.user.models import User1
+from server.apps.user.serializers import RegisterSerializer, UserSerializer
 
 
-class RegisterUser(generics.CreateAPIView):
-    serializer_class = serializers.RegisterSerializer
+class RegisterAPI(generics.GenericAPIView):
+    serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        password = serializer.validated_data.get('password')
-        password2 = serializer.validated_data.get('password2')
-        if password != password2:
-            user.delete()
-            return Response('Пароли не совпадают')
         refresh = RefreshToken.for_user(user)
         access = AccessToken.for_user(user)
-        return Response(data={'status': 'User confirmed!',
-                              'refresh_token': str(refresh),
-                              'access_token': str(access),
-                              'expires_in': str(access.lifetime)})
+
+        return Response({
+            "user": UserSerializer(user, context=self.get_serializer_context()).data,
+            'refresh_token': str(refresh),
+            'access_token': str(access),
+            'expires_in': str(access.lifetime)
+        })
 
 
-class LoginAPIView(generics.GenericAPIView):
+class Login(generics.GenericAPIView):
     serializer_class = serializers.LoginSerializer
     permission_classes = [permissions.AllowAny]
 
@@ -51,6 +50,6 @@ class LoginAPIView(generics.GenericAPIView):
 
 
 class UserListView(generics.ListAPIView):
-    queryset = User.objects.all()
+    queryset = User1.objects.all()
     serializer_class = serializers.UserDetailSerializer
     permission_classes = [permissions.AllowAny]
